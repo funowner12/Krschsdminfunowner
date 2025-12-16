@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>FUN OWNER ADMIN</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f1724; --card:#0b1220; --accent:#6ee7b7; --muted:#94a3b8;
+  }
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,Arial;padding:18px;margin:0;background:
+    radial-gradient(1000px 600px at 10% 10%, #071022 0%, transparent 20%),
+    radial-gradient(800px 400px at 90% 90%, rgba(20,30,40,0.6) 0%, transparent 20%),
+    linear-gradient(180deg,#00111a 0%, #071426 100%); color:#e6eef8; min-height:100vh;}
+  .wrap{max-width:980px;margin:0 auto}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:48px;height:48px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(135deg,#065f46,#0ea5a6)}
+  .title{font-weight:700;font-size:18px}
+  .subtitle{color:var(--muted);font-size:13px}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+  .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding:14px;border-radius:12px;backdrop-filter: blur(6px);border:1px solid rgba(255,255,255,0.03)}
+  label{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
+  input,textarea,select,button{font-family:inherit}
+  input,textarea,select{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;outline:none}
+  textarea{min-height:84px;resize:vertical}
+  .row{display:flex;gap:8px}
+  .btn{background:linear-gradient(90deg,var(--accent),#34d399);color:#042a2b;border:0;padding:10px 12px;border-radius:10px;font-weight:700;cursor:pointer}
+  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+  .small{font-size:12px;color:var(--muted)}
+  .loader{height:6px;background:rgba(255,255,255,0.04);border-radius:999px;overflow:hidden;margin-bottom:10px}
+  .loader > i{display:block;height:100%;width:40%;background:linear-gradient(90deg,#34d399,#60a5fa);transform:translateX(-120%);animation:slide 1.6s linear infinite}
+  @keyframes slide{to{transform:translateX(220%)}}
+  table{width:100%;border-collapse:collapse;margin-top:8px}
+  th,td{padding:8px;border-bottom:1px dashed rgba(255,255,255,0.03);text-align:left;font-size:13px}
+  th{color:var(--muted);font-weight:600}
+  .status{display:flex;align-items:center;gap:8px}
+  footer{margin-top:20px;color:var(--muted);font-size:13px;text-align:center}
+  .smallBtn{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);padding:6px 8px;border-radius:8px;cursor:pointer}
+
+  /* confirm modal (works in WebView) */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:9999}
+  .modal{background:linear-gradient(180deg,#071426,#0b1220);padding:18px;border-radius:12px;max-width:420px;width:92%;box-shadow:0 8px 30px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.04)}
+  .modal h3{margin:0 0 8px 0;font-size:16px}
+  .modal p{margin:0 0 14px 0;color:var(--muted);font-size:14px}
+  .modal .actions{display:flex;gap:8px;justify-content:flex-end}
+  .modal .btn.small{padding:8px 10px;font-size:13px}
+  .btn.danger{background:linear-gradient(90deg,#f87171,#fca5a5);color:#2b0b0b}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo">A</div>
+        <div>
+          <div class="title">FUN OWNER ADMIN</div>
+          <div class="subtitle">Direct access — real-time</div>
+        </div>
+      </div>
+      <div class="status"><div class="small" id="statusText">Direct (no sign-in)</div></div>
+    </header>
+
+    <div id="mainArea">
+      <div class="loader" id="topLoader"><i></i></div>
+
+      <div class="card-grid">
+        <!-- Maintenance -->
+        <div class="card" id="card-maint">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div><strong>Maintenance</strong><div class="small">Toggle and message</div></div>
+            <div class="small" id="m-last">—</div>
+          </div>
+          <div style="margin-top:12px">
+            <label>State</label>
+            <select id="maintenance"></select>
+            <label>Title</label>
+            <input id="mtitle" placeholder="Maintenance title">
+            <label>Message</label>
+            <textarea id="mmessage" placeholder="Message for users"></textarea>
+            <label>Update link</label>
+            <input id="updatelink" placeholder="https://play.google.com/...">
+            <label>Use link</label>
+            <input id="uselink" placeholder="https://example.com/old">
+            <div style="margin-top:10px" class="row">
+              <button class="btn" id="saveMaintenance">Save</button>
+              <button class="btn ghost" id="loadMaintenance">Refresh</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notice -->
+        <div class="card" id="card-notice">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div><strong>Notice</strong><div class="small">Short notice for users</div></div>
+            <div class="small" id="n-last">—</div>
+          </div>
+          <div style="margin-top:12px">
+            <label>State</label>
+            <select id="noticemessage"></select>
+            <label>Notice text</label>
+            <textarea id="noticecode" placeholder="Notice text"></textarea>
+            <div style="margin-top:10px" class="row">
+              <button class="btn" id="saveNotice">Save</button>
+              <button class="btn ghost" id="loadNotice">Refresh</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Title -->
+        <div class="card" id="card-title">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div><strong>App Title</strong><div class="small">Shown in app header</div></div>
+            <div class="small" id="t-last">—</div>
+          </div>
+          <div style="margin-top:12px">
+            <label>Title</label>
+            <input id="apptitle" placeholder="App title">
+            <div style="margin-top:10px" class="row">
+              <button class="btn" id="saveTitle">Save</button>
+              <button class="btn ghost" id="loadTitle">Refresh</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gift -->
+        <div class="card" id="card-gift">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div><strong>Gift Code</strong><div class="small">One-time code control</div></div>
+            <div class="small" id="g-last">—</div>
+          </div>
+          <div style="margin-top:12px">
+            <label>One-time join</label>
+            <select id="onetimejoin"></select>
+            <label>Code</label>
+            <input id="giftcode" placeholder="CODE">
+            <div style="margin-top:10px" class="row">
+              <button class="btn" id="saveGift">Save</button>
+              <button class="btn ghost" id="loadGift">Refresh</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Users minimal -->
+      <div style="margin-top:14px" class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><strong>Users</strong><div class="small">Add / list (mobile only). Brand/time/balance auto-set.</div></div>
+          <div class="small">Reacts in real-time</div>
+        </div>
+        <div style="margin-top:10px" class="row">
+          <input id="user_mobile" placeholder="Enter mobile (used as key)" />
+          <button class="btn" id="addUserBtn">Add</button>
+        </div>
+        <div id="usersWrap" style="margin-top:12px">
+          <div class="small muted" id="usersLoading">Loading users…</div>
+          <div id="usersTable" style="display:none"></div>
+        </div>
+      </div>
+
+      <footer>Direct admin (no Google). Use only in trusted environment.</footer>
+    </div>
+  </div>
+
+  <!-- confirm modal markup -->
+  <div class="modal-backdrop" id="confirmBackdrop" role="dialog" aria-modal="true">
+    <div class="modal" role="document" aria-labelledby="confirmTitle">
+      <h3 id="confirmTitle">Confirm delete</h3>
+      <p id="confirmMsg">Are sure delete this user</p>
+      <div class="actions" style="margin-top:12px">
+        <button class="btn ghost btn small" id="confirmNo">No</button>
+        <button class="btn danger small" id="confirmYes">Yes, delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- firebase config -->
+  <script type="application/json" id="FIREBASE_CONFIG">
+  {
+    "apiKey": "AIzaSyCKyMh58i2FM5dVc3FWvXPPjeAljmiXK54",
+    "authDomain": "krsch-e6f64.firebasestorage.app",
+    "databaseURL": "https://krsch-e6f64-default-rtdb.firebaseio.com",
+    "projectId": "krsch-e6f64",
+    "storageBucket": "krsch-e6f64.firebasestorage.app",
+    "messagingSenderId": "216050966238",
+    "appId": "1:216050966238:android:b3441568eeba095f5d6c4f"
+  }
+  </script>
+
+  <!-- Firebase modular SDK -->
+  <script type="module">
+    const cfg = JSON.parse(document.getElementById('FIREBASE_CONFIG').textContent.trim());
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
+    import { getDatabase, ref, onValue, set, update, off } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js';
+
+    const app = initializeApp(cfg);
+    const db = getDatabase(app);
+
+    // UI refs
+    const topLoader = document.getElementById('topLoader');
+    const maintenanceSel = document.getElementById('maintenance');
+    const noticemessageSel = document.getElementById('noticemessage');
+    const onetimejoinSel = document.getElementById('onetimejoin');
+
+    const mtitle = document.getElementById('mtitle');
+    const mmessage = document.getElementById('mmessage');
+    const updatelink = document.getElementById('updatelink');
+    const uselink = document.getElementById('uselink');
+
+    const noticecode = document.getElementById('noticecode');
+    const apptitle = document.getElementById('apptitle');
+    const giftcode = document.getElementById('giftcode');
+    const user_mobile = document.getElementById('user_mobile');
+
+    // confirm modal refs
+    const confirmBackdrop = document.getElementById('confirmBackdrop');
+    const confirmMsg = document.getElementById('confirmMsg');
+    const confirmYes = document.getElementById('confirmYes');
+    const confirmNo = document.getElementById('confirmNo');
+
+    // status
+    document.getElementById('statusText').textContent = 'No-auth — direct';
+
+    const listeners = [];
+
+    function showConfirm(message, onYes){
+      confirmMsg.textContent = message||'Are sure delete this user';
+      confirmBackdrop.style.display = 'flex';
+      // remove old handlers
+      const yesHandler = async function handler(ev){
+        confirmBackdrop.style.display = 'none';
+        confirmYes.removeEventListener('click', handler);
+        confirmNo.removeEventListener('click', noHandler);
+        try{ await onYes(); } catch(e){ console.error(e); alert('Error: '+(e.message||e)); }
+      };
+      const noHandler = function(){
+        confirmBackdrop.style.display = 'none';
+        confirmYes.removeEventListener('click', yesHandler);
+        confirmNo.removeEventListener('click', noHandler);
+      };
+      // attach
+      confirmYes.addEventListener('click', yesHandler);
+      confirmNo.addEventListener('click', noHandler);
+    }
+
+    function startRealtime(){
+      topLoader.style.display = 'block';
+
+      const r1 = ref(db, 'data1/data1');
+      onValue(r1, snap => {
+        const v = snap.exists() ? snap.val() : null;
+        maintenanceSel.innerHTML = `<option value="false">OFF</option><option value="true">ON</option>`;
+        if(v){
+          maintenanceSel.value = (v.maintenance && v.maintenance.toString()==='true') ? 'true' : 'false';
+          mtitle.value = v.mtitle||'';
+          mmessage.value = v.mmessage||'';
+          updatelink.value = v.updatelink||'';
+          uselink.value = v.uselink||'';
+          document.getElementById('m-last').textContent = 'Updated';
+        } else {
+          maintenanceSel.value = 'false';
+          document.getElementById('m-last').textContent = 'Empty';
+        }
+      });
+      listeners.push(r1);
+
+      const r2 = ref(db, 'data3/data3');
+      onValue(r2, snap => {
+        const v = snap.exists()? snap.val(): null;
+        noticemessageSel.innerHTML = `<option value="false">OFF</option><option value="true">ON</option>`;
+        if(v){
+          noticemessageSel.value = (v.noticemessage && v.noticemessage.toString()==='true') ? 'true' : 'false';
+          noticecode.value = v.noticecode||'';
+          document.getElementById('n-last').textContent = 'Updated';
+        } else {
+          noticemessageSel.value = 'false';
+          document.getElementById('n-last').textContent = 'Empty';
+        }
+      });
+      listeners.push(r2);
+
+      const r3 = ref(db, 'data4/data4');
+      onValue(r3, snap => {
+        const v = snap.exists()? snap.val(): null;
+        if(v){
+          apptitle.value = v.title||'';
+          document.getElementById('t-last').textContent = 'Updated';
+        } else {
+          apptitle.value = '';
+          document.getElementById('t-last').textContent = 'Empty';
+        }
+      });
+      listeners.push(r3);
+
+      const r4 = ref(db, 'data5/data5');
+      onValue(r4, snap => {
+        const v = snap.exists()? snap.val(): null;
+        onetimejoinSel.innerHTML = `<option value="false">OFF</option><option value="true">ON</option>`;
+        if(v){
+          onetimejoinSel.value = (v.onetimejoin && v.onetimejoin.toString()==='true') ? 'true' : 'false';
+          giftcode.value = v.code||'';
+          document.getElementById('g-last').textContent = 'Updated';
+        } else {
+          onetimejoinSel.value = 'false';
+          document.getElementById('g-last').textContent = 'Empty';
+        }
+      });
+      listeners.push(r4);
+
+      const ru = ref(db, 'dbRef');
+      onValue(ru, snap => {
+        const tbl = document.getElementById('usersTable');
+        const loader = document.getElementById('usersLoading');
+        if(!snap.exists()){
+          loader.textContent = 'No users';
+          tbl.style.display='none';
+          return;
+        }
+        loader.style.display='none';
+        const data = snap.val();
+        let html = `<table><thead><tr><th>Key</th><th>mobile</th><th>time</th><th>action</th></tr></thead><tbody>`;
+        Object.keys(data).sort().forEach(k=>{
+          const v = data[k]||{};
+          // show escaped key to user, but store encoded key in attribute
+          html += `<tr>
+            <td style="font-weight:700">${escape(k)}</td>
+            <td>${escape(v.mobile||'')}</td>
+            <td>${escape(v.time||'')}</td>
+            <td><button data-key="${encodeURIComponent(k)}" class="smallBtn">Delete</button></td>
+          </tr>`;
+        });
+        html += `</tbody></table>`;
+        tbl.innerHTML = html;
+        tbl.style.display = 'block';
+
+        // attach listeners (decode key)
+        tbl.querySelectorAll('button[data-key]').forEach(b => {
+          b.addEventListener('click', (e)=>{
+            const encoded = e.currentTarget.getAttribute('data-key') || '';
+            const realKey = decodeURIComponent(encoded);
+            // show custom confirm modal
+            showConfirm(`Are sure delete this user (${realKey})`, async ()=>{
+              await deleteUser(realKey);
+            });
+          });
+        });
+      });
+      listeners.push(ru);
+
+      setTimeout(()=> topLoader.style.display = 'none', 800);
+    }
+
+    function stopRealtime(){
+      listeners.forEach(r => off(r));
+      listeners.length = 0;
+    }
+
+    function escape(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    // Save handlers
+    document.getElementById('saveMaintenance').addEventListener('click', async ()=>{
+      const obj = {
+        maintenance: maintenanceSel.value.toString(),
+        mtitle: mtitle.value||'',
+        mmessage: mmessage.value||'',
+        updatelink: updatelink.value||'',
+        uselink: uselink.value||''
+      };
+      try{ await set(ref(db,'data1/data1'), obj); alert('Saved'); } catch(e){ alert(e.message); }
+    });
+
+    document.getElementById('saveNotice').addEventListener('click', async ()=>{
+      const obj = { noticemessage: noticemessageSel.value.toString(), noticecode: noticecode.value||'' };
+      try{ await set(ref(db,'data3/data3'), obj); alert('Saved'); } catch(e){ alert(e.message); }
+    });
+
+    document.getElementById('saveTitle').addEventListener('click', async ()=>{
+      try{ await set(ref(db,'data4/data4'), { title: apptitle.value||'' }); alert('Saved'); } catch(e){ alert(e.message); }
+    });
+
+    document.getElementById('saveGift').addEventListener('click', async ()=>{
+      try{ await update(ref(db,'data5/data5'), { onetimejoin: onetimejoinSel.value.toString(), code: giftcode.value||'' }); alert('Saved'); } catch(e){ alert(e.message); }
+    });
+
+    document.getElementById('addUserBtn').addEventListener('click', async ()=>{
+      const mobile = (user_mobile.value||'').trim();
+      if(!mobile){ alert('Enter mobile'); return; }
+      const data = { mobile, brand:'Owner', balance:'0', time: nowStr(), token:'' };
+      try{ await set(ref(db,'dbRef/'+mobile), data); user_mobile.value=''; alert('User added'); } catch(e){ alert(e.message); }
+    });
+
+    async function deleteUser(key){
+      try{
+        await set(ref(db,'dbRef/'+key), null);
+        alert('Deleted');
+      } catch(e){ alert(e.message); }
+    }
+
+    function nowStr(){ const d=new Date(), pad=n=>n<10?'0'+n:n; return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+
+    // start realtime immediately (no auth)
+    startRealtime();
+
+    // connectivity hint
+    window.addEventListener('online', ()=> document.getElementById('statusText').textContent = 'Online (no-auth)');
+    window.addEventListener('offline', ()=> document.getElementById('statusText').textContent = 'Offline');
+  </script>
+</body>
+  </html>
